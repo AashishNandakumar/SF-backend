@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication,TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 @api_view(['POST'])
 def login(request):
     user=get_object_or_404(User,username=request.data['username'])
@@ -23,6 +26,8 @@ def signup(request):
         token=Token.objects.create(user=user)
         return Response({"token":token.key,"user":serializer.data})
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-@api_view(['POST'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@api_view(['POST','GET'])
 def test_token(request):
-    return Response({})
+    return Response("passed for {}".format(request.user.email))
