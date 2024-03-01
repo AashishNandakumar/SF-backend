@@ -269,3 +269,23 @@ class User(models.Model):
         managed = False
         db_table = 'user'
 """
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    image_url = models.CharField(max_length=500, null=True)  # s3 object link
+
+
+class SubCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)  # null=True only for debugging
+    image_url = models.CharField(max_length=500, null=True)  # s3 object link
+
+
+class SubSubCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, null=True)  # null=True only for debugging
+    image_url = models.CharField(max_length=500, null=True)  # s3 object link

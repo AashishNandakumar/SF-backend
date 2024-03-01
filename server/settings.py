@@ -167,8 +167,8 @@ DJOSER = {
 
 # Simple_JWT: Used along with djoser to provide JWT tokens
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),  # access tokens: used in API calls for resource fetching(auth purposes)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),  # refresh tokens: used to generate access tokens after its(access tokens) expiry
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # access tokens: used in API calls for resource fetching(auth purposes)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=50),  # refresh tokens: used to generate access tokens after its(access tokens) expiry
     'ROTATE_REFRESH_TOKEN': False,  # when you generate new access tokens from refresh tokens, the output contains both new refresh and access tokens, but I only want new access tokens and not new refresh tokens so  do this.
 }
 
@@ -178,3 +178,15 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": True,
 }
+
+"""
+adarsh:
+pwd: "Adarsh@11RNS"
+tokens: {
+    {
+        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxMzYzMzQwNCwiaWF0IjoxNzA5MzEzNDA0LCJqdGkiOiJhMjIyZTgyZmM2ODY0ZjgxYTMzYzk4YTA2MjE0OWRkNCIsInVzZXJfaWQiOjd9.QoML3Fm85ftA2WxWGf1TB9pcS056TXCnkXh9BaNxUro",
+        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA5NzQ1NDA0LCJpYXQiOjE3MDkzMTM0MDQsImp0aSI6ImZkNTdmYzA3MGIwZjQwMmI4ZmQyNzdhYWRmMzAwMzkxIiwidXNlcl9pZCI6N30.-nLT8IMmrrFD4GRUZ4AoZEgBesmPYUvES6eHAi3aNNc"
+    }
+}
+
+"""
