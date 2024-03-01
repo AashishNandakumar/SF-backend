@@ -1,3 +1,5 @@
+
+"""
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from endpoints.models import SubSubCategory
@@ -18,3 +20,4 @@ class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model=SubCategory
         fields="__all__"
+"""

@@ -10,9 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 import pymysql
+from datetime import timedelta
 pymysql.install_as_MySQLdb()
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,18 +37,27 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+]
+
+PROJECT_APPS = [
+    "endpoints",
+]
+
+THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_spectacular",
-    "endpoints",
+    "djoser",
 ]
+
+INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -82,10 +96,10 @@ WSGI_APPLICATION = "server.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME":"ramayan_db",
-        "USER":"root",
-        "PASSWORD":"root",
-        "HOST":"localhost",
+        "NAME": "ramayan_db",
+        "USER": os.getenv('USER1'),
+        "PASSWORD": os.getenv('PASSWORD1'),
+        "HOST": "localhost",
         "PORT": "3306"
     }
 }
@@ -132,16 +146,35 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-REST_FRAMEWORK={
-    "DEFAULT_SCHEMA_CLASS":"drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES" : [
+
+# custom configuration settings
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # your application now supports JWT auth
     ],
 }
 
-SPECTACULAR_SETTINGS={
-    "TITLE":"Your Project API",
-    "DESCRIPTION":"Your project description",
-    "VERSION":"1.0.0",
-    "SERVE_INCLUDE_SCHEMA":True,
+# Djoser: library that provides ready to use endpoints for authentication
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'endpoints.serializers.CustomUserCreateSerializer',  # custom serializer to validate and add data into the model
+        'user': 'endpoints.serializers.CustomUserSerializer',
+    }
+}
+
+# Simple_JWT: Used along with djoser to provide JWT tokens
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),  # access tokens: used in API calls for resource fetching(auth purposes)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),  # refresh tokens: used to generate access tokens after its(access tokens) expiry
+    'ROTATE_REFRESH_TOKEN': False,  # when you generate new access tokens from refresh tokens, the output contains both new refresh and access tokens, but I only want new access tokens and not new refresh tokens so  do this.
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Your Project API",
+    "DESCRIPTION": "Your project description",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": True,
 }
