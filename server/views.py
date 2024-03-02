@@ -1,3 +1,6 @@
+"""
+# never put views in project directory only use case is when want to display custom error messages
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import UserSerializer
@@ -31,3 +34,4 @@ def signup(request):
 @api_view(['POST','GET'])
 def test_token(request):
     return Response("passed for {}".format(request.user.email))
+"""
