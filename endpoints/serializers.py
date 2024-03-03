@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from django.contrib.auth.models import Group, User
 from rest_framework import serializers
 from . import models
 
-
+"""
 class CustomUserCreateSerializer(UserCreateSerializer):  # The default 'UserCreateSerializer' was not saving first_name and last_name, hence this part exists
     class Meta(UserCreateSerializer.Meta):
         model = User
@@ -14,6 +15,25 @@ class CustomUserSerializer(UserSerializer):  # the default 'UserSerializer' was 
     class Meta(UserSerializer.Meta):
         model = User
         fields = ["username", "first_name", "last_name"]  # display only these fields
+"""
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'username']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+
+        user_type = self.context.get('user_type')
+
+        group = Group.objects.get(name=user_type)
+
+        user.groups.add(group)
+
+        return user
 
 
 class CategorySerializer(serializers.ModelSerializer):

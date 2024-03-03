@@ -55,7 +55,7 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "drf_spectacular",
     "djoser",
-    'drf_yasg'
+    'drf_yasg',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -105,6 +105,16 @@ DATABASES = {
     }
 }
 
+# Cache configuration for handling OTP generation and validation
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',  # 'redis' is an in-memory(RAM) data structure store, used for faster read/write
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # port where redis is running (django communicates with it through this endpoint)
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -160,10 +170,7 @@ REST_FRAMEWORK = {
 
 # Djoser: library that provides ready to use endpoints for authentication
 DJOSER = {
-    'SERIALIZERS': {
-        'user_create': 'endpoints.serializers.CustomUserCreateSerializer',  # custom serializer to validate and add data into the model
-        'user': 'endpoints.serializers.CustomUserSerializer',
-    }
+    'TOKEN_MODEL': 'rest_framework_simplejwt.tokens.AccessToken'
 }
 
 # Simple_JWT: Used along with djoser to provide JWT tokens
@@ -173,12 +180,12 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKEN': False,  # when you generate new access tokens from refresh tokens, the output contains both new refresh and access tokens, but I only want new access tokens and not new refresh tokens so  do this.
 }
 
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Your Project API",
-    "DESCRIPTION": "Your project description",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": True,
-}
+# SPECTACULAR_SETTINGS = {
+#     "TITLE": "Your Project API",
+#     "DESCRIPTION": "Your project description",
+#     "VERSION": "1.0.0",
+#     "SERVE_INCLUDE_SCHEMA": True,
+# }
 
 """
 adarsh:
