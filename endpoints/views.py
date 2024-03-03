@@ -20,6 +20,7 @@ class SubSubCategoryViewSet(viewsets.ModelViewSet):
 """
 from urllib.parse import urlparse
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -250,6 +251,8 @@ class GenerateUUID(APIView):
 
 
 class GenerateSignedURLAndStoreReference(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
     """
         # if you want to store image for a particular category
         ex: localhost:8000/api/generate-signed-url?category_id=3&filename=Aashish.jpeg&file_type=image
@@ -327,6 +330,7 @@ redis_instance = redis.StrictRedis(host=redis_host, port=redis_port, db=0, decod
 # generate OTP
 class GenerateOTP(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
 
     def post(self, request):
         try:

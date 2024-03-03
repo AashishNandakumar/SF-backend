@@ -166,6 +166,14 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # your application now supports JWT auth
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        'anon': '2/minute',
+        'user': '4/minute'
+    }
 }
 
 # Djoser: library that provides ready to use endpoints for authentication
