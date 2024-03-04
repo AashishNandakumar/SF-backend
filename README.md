@@ -65,6 +65,17 @@ To access the Django admin, you'll need to create a superuser account in the dat
 python manage.py createsuperuser
 ```
 
+### Fill the required credentials in .env
+```bash
+USER1='mysql_user'
+PASSWORD1='mysql_pwd'
+BUCKET_NAME='s3_bucket_name'
+REGION='aws_region'
+AWS_ACCESS_KEY_ID = 'aws_access_key_id'
+AWS_SECRET_ACCESS_KEY = 'aws_secret_access_key'
+AWS_REGION = 'aws_region'
+```
+
 ### Running the development server
 To start the Django development server, run:
 ```bash
