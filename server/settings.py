@@ -96,8 +96,12 @@ WSGI_APPLICATION = "server.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'ramayan_db'),
+        'USER': os.getenv('DB_USER', 'my_user'),
+        'PASSWORD': os.getenv('DB_PASS', 'my_password'),
+        'HOST': os.getenv('DB_SERVICE', 'db'),
+        'PORT': os.getenv('DB_PORT', '3306')
     }
 }
 
@@ -105,7 +109,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',  # 'redis' is an in-memory(RAM) data structure store, used for faster read/write
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # port where redis is running (django communicates with it through this endpoint)
+        'LOCATION': os.getenv('REDIS_LOCATION', 'redis:://127.0.0.1:6379/1'),  # port where redis is running (django communicates with it through this endpoint)
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

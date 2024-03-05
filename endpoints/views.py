@@ -1,23 +1,3 @@
-
-"""
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework import viewsets
-from .models import SubCategory, SubSubCategory
-from server.serializers import SubSubCategorySerializer
-
-class SubSubCategoryViewSet(viewsets.ModelViewSet):
-    queryset = SubSubCategory.objects.all()
-    serializer_class = SubSubCategorySerializer  # Add this line
-
-    def list(self, request):
-        subcategory = request.query_params.get('category')
-        queryset = self.queryset
-        if subcategory:
-            queryset = queryset.filter(sub_category_name=subcategory)
-        serializer = SubSubCategorySerializer(queryset, many=True)
-        return Response(serializer.data)
-"""
 from urllib.parse import urlparse
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
@@ -28,7 +8,6 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from twilio.rest import Client
 from . import serializers
 from . import models
 from dotenv import load_dotenv

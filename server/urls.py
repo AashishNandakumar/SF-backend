@@ -75,13 +75,15 @@ urlpatterns = [
 ]
 
 """
-djoser endpoints(we will be using):
+djoser endpoints
+
+(DON'T USE THESE ENDPOINTS, USE ONLY WHEN THE DEVELOPER INSTRUCTS YOU TO !!!!):
 
 1. http://localhost:8080/auth/users/ --> In the body add username, first_name, last_name(JSON) and send a POST req to register user
     
 2. http://localhost:8000/auth/jwt/create/ --> In the body add username and password(JSON) and send a POST req to generate refresh and access tokens
 
-3. http://localhost:8000/auth/jwt/refresh/ --> In the body add refresh: refresh_token(JSON) and send a POST req to generate access tokens
+3.(YOU CAN USE THIS) http://localhost:8000/auth/jwt/refresh/ --> In the body add refresh: refresh_token(JSON) and send a POST req to generate access tokens
      
 3. http://localhost:8000/auth/users/ --> in the header add 'Authorization: Bearer ur_token'(key-value) and send a GET req to fetch user creds
 
