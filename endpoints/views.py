@@ -352,6 +352,7 @@ class GenerateOTP(APIView):
                 to = "+91"+username
             )
             """
+            """
             sns_client = boto3.client('sns',
                                       aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
                                       aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
@@ -367,7 +368,7 @@ class GenerateOTP(APIView):
                     }
                 }
             )
-
+            """
             print(f"OTP for {username}: {otp}")
 
             return Response({"message": "OTP sent successfully"}, status.HTTP_200_OK)
