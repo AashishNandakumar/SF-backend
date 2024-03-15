@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-x^tm@ulkkebj^b%_mzkti9hpa^17anc@6uejw(l3zy-1$2#(mp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -55,7 +55,7 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "drf_spectacular",
     "djoser",
-    'drf_yasg'
+    'drf_yasg',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -95,16 +95,26 @@ WSGI_APPLICATION = "server.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "ramayan_db",
-        "USER": os.getenv('USER1'),
-        "PASSWORD": os.getenv('PASSWORD1'),
-        "HOST": "localhost",
-        "PORT": "3306"
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'ramayan_db'),
+        'USER': os.getenv('DB_USER', 'my_user'),
+        'PASSWORD': os.getenv('DB_PASS', 'my_password'),
+        'HOST': os.getenv('DB_SERVICE', 'db'),
+        'PORT': os.getenv('DB_PORT', '3306')
     }
 }
 
+# Cache configuration for handling OTP generation and validation
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',  # 'redis' is an in-memory(RAM) data structure store, used for faster read/write
+        'LOCATION': os.getenv('REDIS_LOCATION', 'redis:://127.0.0.1:6379/1'),  # port where redis is running (django communicates with it through this endpoint)
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -156,14 +166,19 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # your application now supports JWT auth
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        'anon': '20/minute',
+        'user': '10/minute'
+    }
 }
 
 # Djoser: library that provides ready to use endpoints for authentication
 DJOSER = {
-    'SERIALIZERS': {
-        'user_create': 'endpoints.serializers.CustomUserCreateSerializer',  # custom serializer to validate and add data into the model
-        'user': 'endpoints.serializers.CustomUserSerializer',
-    }
+    'TOKEN_MODEL': 'rest_framework_simplejwt.tokens.AccessToken'
 }
 
 # Simple_JWT: Used along with djoser to provide JWT tokens
@@ -173,12 +188,12 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKEN': False,  # when you generate new access tokens from refresh tokens, the output contains both new refresh and access tokens, but I only want new access tokens and not new refresh tokens so  do this.
 }
 
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Your Project API",
-    "DESCRIPTION": "Your project description",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": True,
-}
+# SPECTACULAR_SETTINGS = {
+#     "TITLE": "Your Project API",
+#     "DESCRIPTION": "Your project description",
+#     "VERSION": "1.0.0",
+#     "SERVE_INCLUDE_SCHEMA": True,
+# }
 
 """
 adarsh:

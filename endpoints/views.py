@@ -1,36 +1,22 @@
-
-"""
-from django.shortcuts import render
+from urllib.parse import urlparse
 from rest_framework.response import Response
-from rest_framework import viewsets
-from .models import SubCategory, SubSubCategory
-from server.serializers import SubSubCategorySerializer
-
-class SubSubCategoryViewSet(viewsets.ModelViewSet):
-    queryset = SubSubCategory.objects.all()
-    serializer_class = SubSubCategorySerializer  # Add this line
-
-    def list(self, request):
-        subcategory = request.query_params.get('category')
-        queryset = self.queryset
-        if subcategory:
-            queryset = queryset.filter(sub_category_name=subcategory)
-        serializer = SubSubCategorySerializer(queryset, many=True)
-        return Response(serializer.data)
-"""
-import json
-import os
-
-from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.contrib.auth.models import User, Group
 from . import serializers
 from . import models
 from dotenv import load_dotenv
 import boto3
 import uuid
+import random
+import redis
+import json
+import os
 
 load_dotenv()
 
@@ -244,6 +230,8 @@ class GenerateUUID(APIView):
 
 
 class GenerateSignedURLAndStoreReference(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
     """
         # if you want to store image for a particular category
         ex: localhost:8000/api/generate-signed-url?category_id=3&filename=Aashish.jpeg&file_type=image
@@ -308,3 +296,144 @@ class GenerateSignedURLAndStoreReference(APIView):
         except Exception as e:
             print("Error in generating pre-signed URL", e)
             return Response({"Error": "Couldn't generate signed URL"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# logic for handling user registration(OTPs) and assigning them groups
+redis_url = urlparse(settings.CACHES['default']['LOCATION'])
+redis_host = redis_url.hostname
+redis_port = redis_url.port
+
+redis_instance = redis.StrictRedis(host=redis_host, port=redis_port, db=0, decode_responses=True)
+
+
+# generate OTP
+class GenerateOTP(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
+
+    def post(self, request):
+        try:
+            username = request.data.get('username')
+            if not username:
+                return Response({"Error": "Phone number is required"}, status.HTTP_400_BAD_REQUEST)
+
+            otp = random.randint(10000, 99999)  # 5 digit OTP (only for testing purpose)
+            redis_instance.set(username, otp, ex=300)  # phone_number: otp(key-value pair). store for 300 sec
+
+            # TODO: To send this otp to the phone_number(yet to do)
+            """
+            # I need a twilio phone number which is paid :( 
+            client = Client(os.getenv('TWILIO_ACCOUNT_SID'), os.getenv('TWILIO_AUTH_TOKEN'))
+
+            message = client.messages.create(
+                body = f"You OTP for Ramayan book store is: {otp}",
+                from_ = os.getenv('TWILIO_PHONE_NUMBER'),
+                to = "+91"+username
+            )
+            """
+            """
+            sns_client = boto3.client('sns',
+                                      aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                                      aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                                      region_name=os.getenv('AWS_REGION'))
+
+            sns_client.publish(
+                PhoneNumber="+91"+username,  # E.164 format
+                Message=f"Your OTP for Ramayan book store is: {otp}",
+                MessageAttributes={
+                    'AWS.SNS.SMS.SMSType': {
+                        'DataType': 'String',
+                        'StringValue': 'Transactional'
+                    }
+                }
+            )
+            """
+            print(f"OTP for {username}: {otp}")
+
+            return Response({"message": "OTP sent successfully"}, status.HTTP_200_OK)
+        except Exception as e:
+            print("Error in generating OTP: ", e)
+            return Response({"message": "Error in generating OTP"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# handle registering new users
+class VerifyOTPAndSignUp(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            username = request.data.get('username')  # alias for phone number
+            otp = request.data.get('otp')
+            user_type = request.data.get('user_type', 'Customer')
+
+            stored_otp = redis_instance.get(username)
+
+            if not stored_otp or stored_otp != otp:
+                return Response({"error": "Invalid or Expired OTP"}, status.HTTP_400_BAD_REQUEST)
+
+            serializer = serializers.CustomUserSerializer(data=request.data, context={'user_type': user_type})
+
+            serializer.is_valid(raise_exception=True)
+
+            user = serializer.save()
+
+            # TODO: After storing the user details in the DB, return JWT tokens to the client for making subsequent API calls
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+
+            return Response({"message": "Successfully signed up", "tokens": data}, status.HTTP_201_CREATED)
+        except Exception as e:
+            print("Error in verifying OTP: ", e)
+            return Response({"Error": "Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VerifyOTPAndSignIn(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            username = request.data.get('username')  # alias for phone number
+            otp = request.data.get('otp')
+
+            stored_otp = redis_instance.get(username)
+
+            if not stored_otp or stored_otp != otp:
+                return Response({"error": "Invalid or Expired OTP"}, status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(username=username)
+
+            if user:
+                refresh = RefreshToken.for_user(user)
+
+                data = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+
+                return Response({"message": "Successfully signed in", "tokens": data}, status.HTTP_200_OK)
+            return Response({"Error": "User Does not exist"}, status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("Error in Signin process: ", e)
+            return Response({"Error": "Couldn't complete sign-in process"}, status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateUserData(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            user = get_object_or_404(User, username=request.data.get('username'))
+
+            serializer = serializers.CustomUserSerializer(instance=user, data=request.data, partial=True)
+
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save()
+
+            return Response({"Message": "success in updating user information"})
+        except Exception as e:
+            print("Error in updating user information: ", e)
+            return Response({"Error": "error in updating user information"})
