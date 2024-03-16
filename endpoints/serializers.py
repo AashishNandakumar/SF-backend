@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Group, User
 from rest_framework import serializers
 from . import models
-
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class CustomUserSerializer(serializers.ModelSerializer):
 

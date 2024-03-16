@@ -17,7 +17,7 @@ import random
 import redis
 import json
 import os
-
+from django.contrib.auth import authenticate
 load_dotenv()
 
 
@@ -437,3 +437,16 @@ class UpdateUserData(APIView):
         except Exception as e:
             print("Error in updating user information: ", e)
             return Response({"Error": "error in updating user information"})
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
+from rest_framework.decorators import api_view
+@api_view(['POST'])
+def login_view(request):
+    username=request.data.get('username')
+    password=request.data.get("password")
+    user=authenticate(request,username=username,password=password)
+    if user is not None:
+        login(request,user)
+        return JsonResponse({"message": "Logged in successfully"})
+    else:
+        return JsonResponse({"message": "Invalid usename or password"},status=status.HTTP_400_BAD_REQUEST)
