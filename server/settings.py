@@ -56,6 +56,7 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "djoser",
     'drf_yasg',
+    'corsheaders',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -68,6 +69,36 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware"
+]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://localhost:5174",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 ROOT_URLCONF = "server.urls"
@@ -94,14 +125,25 @@ WSGI_APPLICATION = "server.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('DB_NAME', 'ramayan_db'),
+#         'USER': os.getenv('DB_USER', 'my_user'),
+#         'PASSWORD': os.getenv('DB_PASS', 'my_password'),
+#         'HOST': os.getenv('DB_SERVICE', 'db'),
+#         'PORT': os.getenv('DB_PORT', '3306')
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'ramayan_db'),
-        'USER': os.getenv('DB_USER', 'my_user'),
-        'PASSWORD': os.getenv('DB_PASS', 'my_password'),
-        'HOST': os.getenv('DB_SERVICE', 'db'),
-        'PORT': os.getenv('DB_PORT', '3306')
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "sf_database",
+        "USER": os.getenv('USER1'),
+        "PASSWORD": os.getenv('PASSWORD1'),
+        "HOST": os.getenv('HOST1'),
+        "PORT": "3306"
     }
 }
 
